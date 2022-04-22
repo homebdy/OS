@@ -88,7 +88,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-
+  p->priority = 10;
   release(&ptable.lock);
 
   // Allocate kernel stack.
@@ -531,4 +531,28 @@ procdump(void)
     }
     cprintf("\n");
   }
+}
+
+//PS명령어 구현 - ps함수 정의
+int
+ps(int pid)
+{
+struct proc *p;
+sti();
+
+acquire(&ptable.lock);
+cprintf("cmd \t pid \t ppid \t state \t  priority\n");
+for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+   if(p->state == SLEEPING)
+	cprintf("%s \t %d \t %d \t SLEEPING \t %d\n", 
+			p->name, p->pid, p->parent->pid, p->priority);
+   else if(p->state == RUNNING)
+	cprintf("%s \t %d \t %d \t RUNNING \t %d\n", 
+			p->name, p->pid, p->parent->pid, p->priority);
+   else if(p->state == RUNNABLE)
+	cprintf("%s \t %d \t %d \t RUNNABLE \t %d\n", 
+			p->name, p->pid, p->parent->pid, p->priority);
+}
+release(&ptable.lock);
+return 22;
 }
